@@ -112,15 +112,23 @@ namespace Worker
             {
                 try
                 {
-                    Console.Error.WriteLine("Connecting to redis");
-                    return ConnectionMultiplexer.Connect(ipAddress);
-                }
-                catch (RedisConnectionException)
+                    Console.Error.WriteLine("Connecting to Redis with TLS");
+
+                    var options = new ConfigurationOptions
                 {
-                    Console.Error.WriteLine("Waiting for redis");
-                    Thread.Sleep(1000);
-                }
-            }
+                EndPoints = { ipAddress },
+                Ssl = true,  // ✅ Gunakan TLS
+                AbortOnConnectFail = false
+                };
+
+            return ConnectionMultiplexer.Connect(options);
+        }
+        catch (RedisConnectionException)
+        {
+            Console.Error.WriteLine("Waiting for Redis...");
+            Thread.Sleep(1000);
+        }
+         }
         }
 
         private static string GetIp(string hostname)
