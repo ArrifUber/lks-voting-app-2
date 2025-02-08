@@ -103,23 +103,19 @@ namespace Worker
         }
 
         private static ConnectionMultiplexer OpenRedisConnection(string hostname)
+{
+    while (true)
+    {
+        try
         {
-            // Use IP address to workaround https://github.com/StackExchange/StackExchange.Redis/issues/410
-            var ipAddress = GetIp(hostname);
-            Console.WriteLine($"Found redis at {ipAddress}");
+            Console.Error.WriteLine("Connecting to Redis with TLS");
 
-            while (true)
+            var options = new ConfigurationOptions
             {
-                try
-                {
-                    Console.Error.WriteLine("Connecting to Redis with TLS");
-
-                    var options = new ConfigurationOptions
-                {
-                EndPoints = { ipAddress },
-                Ssl = true,  // ✅ Gunakan TLS
+                EndPoints = { hostname },  // ✅ Gunakan hostname langsung, bukan IP
+                Ssl = true,
                 AbortOnConnectFail = false
-                };
+            };
 
             return ConnectionMultiplexer.Connect(options);
         }
@@ -128,8 +124,9 @@ namespace Worker
             Console.Error.WriteLine("Waiting for Redis...");
             Thread.Sleep(1000);
         }
-         }
-        }
+    }
+}
+
 
         private static string GetIp(string hostname)
             => Dns.GetHostEntryAsync(hostname)
